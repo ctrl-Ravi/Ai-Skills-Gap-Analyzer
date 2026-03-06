@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import InteractiveBackground from "../components/InteractiveBackground";
 
@@ -8,7 +8,33 @@ export default function UploadPage() {
   const [customRole, setCustomRole] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [roleOptions, setRoleOptions] = useState([
+    "Auto Detect",
+    "Machine Learning Engineer",
+    "Data Scientist",
+    "Backend Developer",
+    "Frontend Developer",
+    "Cyber Security Analyst"
+  ]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+        const res = await fetch(`${apiUrl}/api/v1/jobs/roles`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.roles && data.roles.length > 0) {
+            setRoleOptions(data.roles);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch dynamic roles, using defaults", err);
+      }
+    };
+    fetchRoles();
+  }, []);
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -38,7 +64,8 @@ export default function UploadPage() {
     formData.append("role", finalRole);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/analyze/resume", {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      const response = await fetch(`${apiUrl}/api/v1/analyze/resume`, {
         method: "POST",
         body: formData,
       });
@@ -103,12 +130,9 @@ export default function UploadPage() {
                   className="w-full appearance-none bg-zinc-950/80 border border-zinc-700/50 text-zinc-200 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-4 outline-none rounded-xl transition-all shadow-inner hover:border-zinc-600 mb-3 cursor-pointer"
                   disabled={loading}
                 >
-                  <option value="Auto Detect">Auto Detect Profile</option>
-                  <option value="Machine Learning Engineer">Machine Learning Engineer</option>
-                  <option value="Data Scientist">Data Scientist</option>
-                  <option value="Backend Developer">Backend Developer</option>
-                  <option value="Frontend Developer">Frontend Developer</option>
-                  <option value="Cyber Security Analyst">Cyber Security Analyst</option>
+                  {roleOptions.map(r => (
+                    <option key={r} value={r}>{r === "Auto Detect" ? "Auto Detect Profile" : r}</option>
+                  ))}
                   <option value="Custom">Other (Custom Role)</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-400 top-0 h-[52px]">

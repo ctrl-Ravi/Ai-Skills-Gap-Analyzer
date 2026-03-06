@@ -6,3 +6,5 @@ spacy
 pdfplumber
 pydantic
 pydantic-settings
+gunicorn
+python-dotenv

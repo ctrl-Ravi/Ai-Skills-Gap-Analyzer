@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 import time
 import json
+import os
 from datetime import datetime
 
 from database import analyses_collection, jobs_collection
@@ -19,7 +20,7 @@ app = FastAPI(title="AI Skill Gap Analyzer API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this.
+    allow_origins=[os.getenv("FRONTEND_URL", "http://localhost:5173"), "http://localhost:5173"], # In production, restrict via FRONTEND_URL env var.
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -63,14 +64,23 @@ async def analyze_resume(
     found_skills = extract_skills_from_text(raw_text)
     
     # 3. Role Comparison Logic
-    # In a full production env, we fetch this from MongoDB jobs_collection here.
-    roles_db = {
-        "Data Scientist": ["Python", "SQL", "Machine Learning", "Statistics", "Pandas", "TensorFlow"],
-        "Machine Learning Engineer": ["Python", "Docker", "Machine Learning", "TensorFlow", "MLOps", "AWS"],
-        "Backend Developer": ["Node.js", "Python", "SQL", "Docker", "AWS", "API Design", "MongoDB", "FastAPI"],
-        "Frontend Developer": ["React", "JavaScript", "HTML", "CSS", "TypeScript", "TailwindCSS", "Next.js"],
-        "Cyber Security Analyst": ["Linux", "Networking", "Python", "SIEM", "Firewalls", "Cryptography"]
-    }
+    # Fetch roles dynamically from the MongoDB jobs_collection
+    cursor = jobs_collection.find({})
+    db_roles = await cursor.to_list(length=100)
+    
+    roles_db = {}
+    for r in db_roles:
+        roles_db[r["role_name"]] = r["required_skills"]
+        
+    # Fallback to defaults if the database hasn't been seeded yet
+    if not roles_db:
+        roles_db = {
+            "Data Scientist": ["Python", "SQL", "Machine Learning", "Statistics", "Pandas", "TensorFlow"],
+            "Machine Learning Engineer": ["Python", "Docker", "Machine Learning", "TensorFlow", "MLOps", "AWS"],
+            "Backend Developer": ["Node.js", "Python", "SQL", "Docker", "AWS", "API Design", "MongoDB", "FastAPI"],
+            "Frontend Developer": ["React", "JavaScript", "HTML", "CSS", "TypeScript", "TailwindCSS", "Next.js"],
+            "Cyber Security Analyst": ["Linux", "Networking", "Python", "SIEM", "Firewalls", "Cryptography"]
+        }
     
     analysis = match_role_and_skills(found_skills, roles_db, role)
     
@@ -110,14 +120,22 @@ async def analyze_resume(
 
 @app.get("/api/v1/jobs/roles")
 async def get_roles():
-    """Returns canonical roles available in the system"""
-    return {
-        "roles": [
-            "Auto Detect",
+    """Returns canonical roles available in the system dynamically from the database"""
+    cursor = jobs_collection.find({}, {"role_name": 1, "_id": 0})
+    db_roles = await cursor.to_list(length=100)
+    
+    roles = [r["role_name"] for r in db_roles]
+    
+    # Always ensure Auto Detect is an option at the top
+    if not roles:
+         roles = [
             "Data Scientist",
             "Machine Learning Engineer",
             "Backend Developer",
             "Frontend Developer",
             "Cyber Security Analyst"
         ]
+        
+    return {
+        "roles": ["Auto Detect"] + roles
     }
