@@ -17,7 +17,7 @@ Prerequisites:
 - **Python**: 3.10+
 
 ### 1. Start the Backend API (FastAPI)
-Open a terminal in the root folder:
+Open a terminal in the root folder:aa
 
 ```bash
 cd backend
