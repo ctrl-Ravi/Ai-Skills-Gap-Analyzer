@@ -34,7 +34,7 @@ uvicorn main:app --reload
 *Swagger Docs available at http://127.0.0.1:8000/docs*
 
 ### 2. Start the Frontend (React + Vite)
-Open a **new** terminal in the root folder:
+Open a **new** terminal in the root folder:-
 
 ```bash
 cd frontend
