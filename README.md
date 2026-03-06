@@ -5,16 +5,17 @@
 This platform analyzes a student's resume, compares it with real job descriptions, identifies missing skills, and generates a personalized learning roadmap with a Job Readiness Score.
 
 ## Architecture
-- **Frontend**: React.js, Vite, TailwindCSS
+- **Frontend**: React.js, Vite, TailwindCSS, Recharts
 - **Backend API**: Python, FastAPI
-- **Database**: SQLite
-- **AI Engine**: SpaCy/SentenceTransformers
+- **Database**: MongoDB (motor async driver)
+- **AI Engine**: SpaCy NLP, PDFPlumber
 
 ## How to Run locally
 
 Prerequisites:
 - **Node.js**: v18+
 - **Python**: 3.10+
+- **MongoDB**: You need MongoDB Community Server running locally on port `27017` or a MongoDB Atlas URI.
 
 ### 1. Start the Backend API (FastAPI)
 Open a terminal in the root folder:
@@ -28,13 +29,18 @@ venv\Scripts\activate
 source venv/bin/activate
 
 pip install -r requirements.txt
+
+# Download the SpaCy NLP model
+python -m spacy download en_core_web_sm
+
+# Start FastAPI (Ensure MongoDB is running locally)
 uvicorn main:app --reload
 ```
 *API will run at http://127.0.0.1:8000*
 *Swagger Docs available at http://127.0.0.1:8000/docs*
 
 ### 2. Start the Frontend (React + Vite)
-Open a **new** terminal in the root folder:-
+Open a **new** terminal in the root folder:
 
 ```bash
 cd frontend
