@@ -1,51 +1,21 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, Text
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
-import uuid
+import os
+from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./aigap.db"
+# Load environment variables
+load_dotenv()
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Default connection to local MongoDB
+MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+client = AsyncIOMotorClient(MONGO_URL)
+db = client.ai_skills_gap
 
-Base = declarative_base()
+# Database collections
+users_collection = db["users"]
+resumes_collection = db["resumes"]
+analyses_collection = db["analyses"]
+jobs_collection = db["job_descriptions"]
 
-def generate_uuid():
-    return str(uuid.uuid4())
-
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(String, primary_key=True, default=generate_uuid, index=True)
-    email = Column(String, unique=True, index=True)
-    password_hash = Column(String)
-
-class ResumeDB(Base):
-    __tablename__ = "resumes"
-
-    id = Column(String, primary_key=True, default=generate_uuid, index=True)
-    user_id = Column(String, index=True)
-    file_path = Column(String)
-    parsed_content = Column(Text)
-
-class AnalysisDB(Base):
-    __tablename__ = "analyses"
-
-    id = Column(String, primary_key=True, default=generate_uuid, index=True)
-    user_id = Column(String, index=True)
-    target_role = Column(String)
-    readiness_score = Column(Float)
-    missing_skills = Column(Text) # JSON serialized string
-    roadmap = Column(Text) # JSON serialized string
-
-# Ensure tables are created
-Base.metadata.create_all(bind=engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    """Dependency to pass the database instance around."""
+    return db

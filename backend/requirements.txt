@@ -1,7 +1,10 @@
-fastapi==0.110.0
-uvicorn==0.28.0
-sqlalchemy==2.0.28
-spacy==3.7.4
-pdfminer.six==20231228
-pydantic==2.6.4
-python-multipart==0.0.9
+fastapi
+uvicorn[standard]
+motor
+python-multipart
+spacy
+pdfplumber
+pydantic
+pydantic-settings
+gunicorn
+python-dotenv
