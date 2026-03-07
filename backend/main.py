@@ -6,6 +6,10 @@ import time
 import json
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables (useful for local development runs without docker)
+load_dotenv()
 
 from database import analyses_collection, jobs_collection
 from nlp.engine import (
@@ -18,9 +22,15 @@ from nlp.engine import (
 
 app = FastAPI(title="AI Skill Gap Analyzer API", version="1.0.0")
 
+# Determine allowed origins dynamically
+allowed_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+production_url = os.getenv("FRONTEND_URL")
+if production_url:
+    allowed_origins.append(production_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_URL", "http://localhost:5173"), "http://localhost:5173"], # In production, restrict via FRONTEND_URL env var.
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

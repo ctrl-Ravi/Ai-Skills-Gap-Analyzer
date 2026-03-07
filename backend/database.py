@@ -1,5 +1,9 @@
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Default connection to local MongoDB
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")

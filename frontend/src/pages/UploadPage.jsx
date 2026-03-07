@@ -21,7 +21,8 @@ export default function UploadPage() {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+        // Automatically use localhost in dev mode, but use the environment variable in production (Vercel)
+        const apiUrl = import.meta.env.DEV ? "http://127.0.0.1:8000" : (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000");
         const res = await fetch(`${apiUrl}/api/v1/jobs/roles`);
         if (res.ok) {
           const data = await res.json();
@@ -64,7 +65,8 @@ export default function UploadPage() {
     formData.append("role", finalRole);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+      // Automatically use localhost in dev mode, but use the environment variable in production
+      const apiUrl = import.meta.env.DEV ? "http://127.0.0.1:8000" : (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000");
       const response = await fetch(`${apiUrl}/api/v1/analyze/resume`, {
         method: "POST",
         body: formData,
