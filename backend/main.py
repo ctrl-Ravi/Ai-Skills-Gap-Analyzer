@@ -22,6 +22,30 @@ from nlp.engine import (
 
 app = FastAPI(title="AI Skill Gap Analyzer API", version="1.0.0")
 
+def keep_alive():
+    url = os.environ.get("RENDER_EXTERNAL_URL")
+    print("KeepAlive URL:", url)
+
+    if not url:
+        print("KeepAlive: RENDER_EXTERNAL_URL not found")
+        return
+
+    while True:
+        try:
+            requests.get(url, timeout=10)
+            print("KeepAlive ping sent")
+        except Exception as e:
+            print("KeepAlive error:", e)
+
+        time.sleep(600) 
+
+@app.on_event("startup")
+def startup_event():
+    # This runs the keep_alive function in a background thread 
+    # so it doesn't block your FastAPI server from handling real requests.
+    thread = threading.Thread(target=keep_alive, daemon=True)
+    thread.start()
+    
 # Determine allowed origins dynamically
 allowed_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 production_url = os.getenv("FRONTEND_URL")
