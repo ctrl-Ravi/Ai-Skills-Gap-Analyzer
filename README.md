@@ -30,9 +30,6 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 
-# Download the SpaCy NLP model
-python -m spacy download en_core_web_sm
-
 # Start FastAPI (Ensure MongoDB is running locally)
 uvicorn main:app --reload
 ```
